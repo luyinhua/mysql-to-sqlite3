@@ -158,7 +158,7 @@ class MySQLtoSQLite:
         return ""
 
     @classmethod
-    def _translate_type_from_mysql_to_sqlite(cls, column_type):
+    def _translate_type_from_mysql_to_sqlite(cls, column_type, no_case_flag):
         """Handle MySQL 8."""
         try:
             column_type = column_type.decode()
@@ -175,7 +175,7 @@ class MySQLtoSQLite:
         if data_type.endswith(" UNSIGNED"):
             data_type = data_type.replace(" UNSIGNED", "")
             
-        no_case_str = 'COLLATE NOCASE' if self.no_case_flag else ''
+        no_case_str = 'COLLATE NOCASE' if no_case_flag else ''
             
         if data_type in {
             "BIGINT",
@@ -254,7 +254,7 @@ class MySQLtoSQLite:
         self._mysql_cur_dict.execute("SHOW COLUMNS FROM `{}`".format(table_name))
 
         for row in self._mysql_cur_dict.fetchall():
-            column_type, no_case_str = self._translate_type_from_mysql_to_sqlite(row["Type"])
+            column_type, no_case_str = self._translate_type_from_mysql_to_sqlite(row["Type"], self.no_case_flag)
             sql += '\n\t"{name}" {type} {notnull} {default} {no_case},'.format(
                 name=row["Field"],
                 type=column_type,
