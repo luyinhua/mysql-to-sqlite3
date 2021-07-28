@@ -67,6 +67,8 @@ class MySQLtoSQLite:
         self._mysql_port = int(kwargs.get("mysql_port") or 3306)
 
         self._mysql_ssl_disabled = kwargs.get("mysql_ssl_disabled") or False
+        
+        self.no_case_flag = kwargs.get("no_case_flag") or False
 
         self._current_chunk_number = 0
         self._chunk_size = int(kwargs.get("chunk")) if kwargs.get("chunk") else None
@@ -172,7 +174,9 @@ class MySQLtoSQLite:
 
         if data_type.endswith(" UNSIGNED"):
             data_type = data_type.replace(" UNSIGNED", "")
-
+            
+        no_case_str = 'COLLATE NOCASE' if self.no_case_flag else ''
+            
         if data_type in {
             "BIGINT",
             "BLOB",
@@ -191,7 +195,7 @@ class MySQLtoSQLite:
             "TINYINT",
             "YEAR",
         }:
-            return data_type
+            return data_type, ''
         if data_type in {
             "BIT",
             "BINARY",
@@ -200,16 +204,16 @@ class MySQLtoSQLite:
             "TINYBLOB",
             "VARBINARY",
         }:
-            return "BLOB"
+            return "BLOB", ''
         if data_type in {"NCHAR", "NVARCHAR", "VARCHAR"}:
-            return data_type + cls._column_type_length(column_type)
+            return data_type + cls._column_type_length(column_type), no_case_str
         if data_type == "CHAR":
-            return "CHARACTER" + cls._column_type_length(column_type)
+            return "CHARACTER" + cls._column_type_length(column_type), no_case_str
         if data_type == "INT":
-            return "INTEGER"
+            return "INTEGER", ''
         if data_type in "TIMESTAMP":
-            return "DATETIME"
-        return "TEXT"
+            return "DATETIME", ''
+        return "TEXT", no_case_str
 
     @classmethod
     def _translate_default_from_mysql_to_sqlite(
@@ -250,14 +254,15 @@ class MySQLtoSQLite:
         self._mysql_cur_dict.execute("SHOW COLUMNS FROM `{}`".format(table_name))
 
         for row in self._mysql_cur_dict.fetchall():
-            column_type = self._translate_type_from_mysql_to_sqlite(row["Type"])
-            sql += '\n\t"{name}" {type} {notnull} {default},'.format(
+            column_type, no_case_str = self._translate_type_from_mysql_to_sqlite(row["Type"])
+            sql += '\n\t"{name}" {type} {notnull} {default} {no_case},'.format(
                 name=row["Field"],
                 type=column_type,
                 notnull="NULL" if row["Null"] == "YES" else "NOT NULL",
                 default=self._translate_default_from_mysql_to_sqlite(
                     row["Default"], column_type
                 ),
+                no_case=no_case_str,
             )
 
         self._mysql_cur_dict.execute(
