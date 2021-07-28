@@ -337,6 +337,8 @@ class MySQLtoSQLite:
 
         sql += "\n);"
         sql += indices
+        
+        print(sql)
         return sql
 
     def _create_table(self, table_name, attempting_reconnect=False):
