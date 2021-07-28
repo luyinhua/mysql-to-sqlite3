@@ -255,7 +255,7 @@ class MySQLtoSQLite:
 
         for row in self._mysql_cur_dict.fetchall():
             column_type, no_case_str = self._translate_type_from_mysql_to_sqlite(row["Type"], self.no_case_flag)
-            sql += '\n\t"{name}" {type} {notnull} {default} {no_case},'.format(
+            sql += '\n\t"{name}" {type} {notnull} {no_case} {default},'.format(
                 name=row["Field"],
                 type=column_type,
                 notnull="NULL" if row["Null"] == "YES" else "NOT NULL",
@@ -338,7 +338,6 @@ class MySQLtoSQLite:
         sql += "\n);"
         sql += indices
         
-        print(sql)
         return sql
 
     def _create_table(self, table_name, attempting_reconnect=False):
