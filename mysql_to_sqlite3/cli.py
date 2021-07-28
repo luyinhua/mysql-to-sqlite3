@@ -51,7 +51,7 @@ from .debug_info import info
     "-S", "--skip-ssl", is_flag=True, help="Disable MySQL connection encryption."
 )
 @click.option(
-    "-i", "--no-case", no case=True, help="change db text field no case query."
+    "-i", "--no-case", is_flag=True, help="change db text field no case query."
 )
 @click.option(
     "-c",
@@ -90,6 +90,7 @@ def cli(
     mysql_host,
     mysql_port,
     skip_ssl,
+    no_case,
     chunk,
     log_file,
     vacuum,
@@ -109,6 +110,7 @@ def cli(
             mysql_host=mysql_host,
             mysql_port=mysql_port,
             mysql_ssl_disabled=skip_ssl,
+            no_case_flag=no_case,
             chunk=chunk,
             vacuum=vacuum,
             buffered=use_buffered_cursors,
