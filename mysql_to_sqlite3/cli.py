@@ -51,7 +51,7 @@ from .debug_info import info
     "-S", "--skip-ssl", is_flag=True, help="Disable MySQL connection encryption."
 )
 @click.option(
-    "-I", "--no-case", is_flag=True, help="change db text field no case query."
+    "-i", "--no-case", is_flag=True, help="change db text field no case query."
 )
 @click.option(
     "-c",
